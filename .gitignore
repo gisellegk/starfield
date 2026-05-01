@@ -1,7 +1,7 @@
 starfield/starfield-backups/*
 starfield/starfield-gerbers/*
 *.bak
-*~
+*~*
 *.bck
 *.000
 _autosave-*
