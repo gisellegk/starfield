@@ -3350,6 +3350,16 @@
 		)
 		(uuid "3477fa18-5a61-44c1-b4a9-b1c5cc0c3edb")
 	)
+	(text "i know the pot says 50k on it but it really is measuring more like 44 or 45k\nalso next time just use the 3 pin potentiometer to 3v3\n"
+		(exclude_from_sim no)
+		(at 56.388 29.972 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "46d55fac-89d0-4918-be84-725a884ccb99")
+	)
 	(text "up to 600mA cont. \n(including QT Py)"
 		(exclude_from_sim no)
 		(at 65.278 71.12 0)
@@ -3379,6 +3389,16 @@
 			)
 		)
 		(uuid "829c9306-7728-4bb8-a8d7-569a4d3db7fd")
+	)
+	(text "forgot a term calculating resistor values, expecting more like 4V"
+		(exclude_from_sim no)
+		(at 91.186 113.792 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "ae87c68f-7e76-46f0-b6da-9df528c371a2")
 	)
 	(text "44k potentiometer"
 		(exclude_from_sim no)
