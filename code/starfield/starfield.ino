@@ -1,5 +1,7 @@
 #include <Wire.h>
 #include "LED_11x7_Matrix_IS31FL3731.h"
+#include "LP5036.h"
+
 
 LED_11x7_Matrix_IS31FL3731 ledmatrix = LED_11x7_Matrix_IS31FL3731(); // create ledmatrix object
 
@@ -11,7 +13,7 @@ LED_11x7_Matrix_IS31FL3731 ledmatrix = LED_11x7_Matrix_IS31FL3731(); // create l
 uint8_t b_matrix[MATRIX_X][MATRIX_Y];
 uint8_t b_matrix_target[MATRIX_X][MATRIX_Y];
 
-#define FRAME_CTR_MAX 50
+#define FRAME_CTR_MAX 30
 uint8_t frame_ctr;
 
 #define KNOB_PIN 0
@@ -22,20 +24,54 @@ uint8_t moon;
 
 #define NC_PIN 3
 
+LP5036 LP5036; // instantiate LP5036 class
+
+const uint8_t base_b_stars[31] = 
+{
+  93, 161, 16, 134, 5, 12,
+  44, 21, 49, 27, 8, 2,
+  12, 48, 28, 30, 21, 144,
+  34, 12, 71, 85, 58, 37,
+  98, 255, 28, 31, 128, 89, 106 
+
+};
+
+uint8_t b_stars[31] = 
+{
+  93, 161, 16, 134, 5, 12,
+  44, 21, 49, 27, 8, 2,
+  12, 48, 28, 30, 21, 144,
+  34, 12, 71, 85, 58, 37,
+  98, 255, 28, 31, 128, 89, 106 
+
+};
+
+uint8_t t_stars[31];
+
+
 void setup() {
   Serial.begin(9600);
+  
   randomSeed(analogRead(NC_PIN));
 
   // Matrix Setup
   if (! ledmatrix.begin()) {
     Serial.println("IS31 not found");
-    while (1);
+    // while (1);
   }
   Serial.println("IS31 Found!");
   ledmatrix.clear();
 
   // LP5036 setup
+  // i2c already init in ledmatrix.begin()
+  LP5036.I2Cscan();
 
+  LP5036.powerUp();
+
+  LP5036.init(); // set PWM frequency and output current for all leds
+
+  LP5036.setRunMode();
+  LP5036.bankControlOff(); // control each rgb led individually to test function
 
   // fade all in  
   frame_ctr = 0;
@@ -48,7 +84,7 @@ void setup() {
 
   while(frame_ctr < FRAME_CTR_MAX){
     moon += moon_target/FRAME_CTR_MAX;
-    analogWrite(MOON_PIN, moon);
+    // analogWrite(MOON_PIN, moon);
     update_matrix_stars();
     update_bright_stars();
     frame_ctr++;
@@ -66,7 +102,7 @@ void loop() {
   
   update_matrix_stars();
   update_bright_stars();
-  update_moon();
+  // update_moon();
 
   read_knob();
   frame_ctr++;
@@ -75,7 +111,7 @@ void loop() {
     bright_gen_target();
     frame_ctr = 0;
   }
-  delay(10);
+  // delay(10);
 }
 
 void read_knob(){
@@ -89,11 +125,31 @@ void update_moon(){
 }
 
 void update_bright_stars(){
-  
+  for(uint8_t ii = 0x00; ii < 0x0A; ii++) {
+    LP5036.setBrightness(ii, 0x80*knob_val);
+
+    int d1 = t_stars[ii*3] - b_stars[ii*3];
+    
+    b_stars[ii*3] = b_stars[ii*3] + d1*frame_ctr/FRAME_CTR_MAX;
+    LP5036.setColor(ii*3,   b_stars[ii*3]);
+    if(ii == 10) break;
+    int d2 = t_stars[ii*3+1] - b_stars[ii*3+1];
+    int d3 = t_stars[ii*3+2] - b_stars[ii*3+2];
+    b_stars[ii*3+1] = b_stars[ii*3+1] + d2*frame_ctr/FRAME_CTR_MAX;
+    b_stars[ii*3+2] = b_stars[ii*3+2] + d3*frame_ctr/FRAME_CTR_MAX;
+    LP5036.setColor(ii*3+1, b_stars[ii*3+1]);
+    LP5036.setColor(ii*3+2, b_stars[ii*3+2]);
+  }
 }
 
 void bright_gen_target(){
-
+  for(int i = 0; i < 31; i++){
+    if(i == 24 || i == 25) t_stars[i] = b_stars[i]; // no twinkle for planets
+    else {
+      t_stars[i] = base_b_stars[i]*(random(30,100)/100.0);
+      if(t_stars[i] < 2) t_stars[i] = 2;
+    }
+  }
 }
 
 
@@ -116,6 +172,7 @@ void update_matrix_stars(){
       for(int y = 0; y < MATRIX_Y; y++){
         int difference = b_matrix_target[x][y]* (pow(2,knob_val)-.8) - b_matrix[x][y];
         b_matrix[x][y] = b_matrix[x][y] + difference*frame_ctr/FRAME_CTR_MAX;
+        // ledmatrix.drawPixel(x, y, b_matrix[x][y]);
       }
     }
     matrix_show();
