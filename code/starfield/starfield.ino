@@ -84,7 +84,7 @@ void setup() {
 
   while(frame_ctr < FRAME_CTR_MAX){
     moon += moon_target/FRAME_CTR_MAX;
-    // analogWrite(MOON_PIN, moon);
+    analogWrite(MOON_PIN, moon);
     update_matrix_stars();
     update_bright_stars();
     frame_ctr++;
@@ -102,7 +102,7 @@ void loop() {
   
   update_matrix_stars();
   update_bright_stars();
-  // update_moon();
+  update_moon();
 
   read_knob();
   frame_ctr++;
