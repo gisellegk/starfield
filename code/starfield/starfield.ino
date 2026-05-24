@@ -123,13 +123,14 @@ void read_knob(){
 
 void update_moon(){
   // set brightness based on knob value
-  moon = pow(254, knob_val) +1;
+  moon = pow(200, knob_val) +1;
   analogWrite(MOON_PIN, moon);
 }
 
 void update_bright_stars(){
+  uint8_t brightness = map(knob_val*100, 0,100, 20, 128);
   for(uint8_t ii = 0x00; ii < 12; ii++) {
-    LP5036.setBrightness(ii, 0x80*knob_val);
+    LP5036.setBrightness(ii, brightness);
 
     int d1 = t_stars[ii*3] - b_stars[ii*3];
     
@@ -161,7 +162,7 @@ void bright_gen_target(){
 void matrix_gen_target(){
   for(int x = 0; x < MATRIX_X; x++){
     for(int y = 0; y < MATRIX_Y; y++){
-      if(random(0,100) < 30){
+      if(random(0,100) < (30+20*knob_val)){
         b_matrix_target[x][y] = random(0,MATRIX_B_MAX); 
       } else {
         b_matrix_target[x][y] = 0;
