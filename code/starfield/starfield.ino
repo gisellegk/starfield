@@ -26,27 +26,30 @@ uint8_t moon;
 
 LP5036 LP5036; // instantiate LP5036 class
 
-const uint8_t base_b_stars[31] = 
+#define NUM_B_STARS 36
+const uint8_t base_b_stars[NUM_B_STARS] = 
 {
   93, 161, 16, 134, 5, 12,
   44, 21, 49, 27, 8, 2,
   12, 48, 28, 30, 21, 144,
   34, 12, 71, 85, 58, 37,
-  98, 255, 28, 31, 128, 89, 106 
+  98, 255, 28, 31, 128, 89, 
+  0, 0, 0, 0, 0, 106 
 
 };
 
-uint8_t b_stars[31] = 
+uint8_t b_stars[NUM_B_STARS] = 
 {
   93, 161, 16, 134, 5, 12,
   44, 21, 49, 27, 8, 2,
   12, 48, 28, 30, 21, 144,
   34, 12, 71, 85, 58, 37,
-  98, 255, 28, 31, 128, 89, 106 
+  98, 255, 28, 31, 128, 89, 
+  0, 0, 0, 0, 0, 106
 
 };
 
-uint8_t t_stars[31];
+uint8_t t_stars[NUM_B_STARS];
 
 
 void setup() {
@@ -125,14 +128,14 @@ void update_moon(){
 }
 
 void update_bright_stars(){
-  for(uint8_t ii = 0x00; ii < 0x0A; ii++) {
+  for(uint8_t ii = 0x00; ii < 12; ii++) {
     LP5036.setBrightness(ii, 0x80*knob_val);
 
     int d1 = t_stars[ii*3] - b_stars[ii*3];
     
     b_stars[ii*3] = b_stars[ii*3] + d1*frame_ctr/FRAME_CTR_MAX;
     LP5036.setColor(ii*3,   b_stars[ii*3]);
-    if(ii == 10) break;
+    // if(ii == 10) break;
     int d2 = t_stars[ii*3+1] - b_stars[ii*3+1];
     int d3 = t_stars[ii*3+2] - b_stars[ii*3+2];
     b_stars[ii*3+1] = b_stars[ii*3+1] + d2*frame_ctr/FRAME_CTR_MAX;
@@ -140,10 +143,11 @@ void update_bright_stars(){
     LP5036.setColor(ii*3+1, b_stars[ii*3+1]);
     LP5036.setColor(ii*3+2, b_stars[ii*3+2]);
   }
+
 }
 
 void bright_gen_target(){
-  for(int i = 0; i < 31; i++){
+  for(int i = 0; i < NUM_B_STARS; i++){
     if(i == 24 || i == 25) t_stars[i] = b_stars[i]; // no twinkle for planets
     else {
       t_stars[i] = base_b_stars[i]*(random(30,100)/100.0);
